@@ -48,6 +48,14 @@
               Delete
             </a>
             {% endif %}
+
+            {% if user.is_authenticated and user != review.user %}
+            <form method="post" action="{% url 'movies.report_review' id=template_data.movie.id review_id=review.id %}">
+              {% csrf_token %}
+              <input type="text" name="reason" placeholder="Report reason" required class="form-control">
+              <button type="submit" class="btn btn-warning mt-2">Report Review</button>
+            </form>
+            {% endif %}
           </li>
           {% endfor %}
         </ul>
