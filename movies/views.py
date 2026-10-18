@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Movie, Review, ReviewReport
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 
 
 def index(request):
@@ -85,3 +86,18 @@ def delete_reported_review(request, id, review_id):
         return redirect('movies.show', id=id)
     else:
         return redirect('movies.show', id=id)
+    
+@login_required
+def top_commenters(request):
+    if not request.user.is_staff:
+        return redirect('movies.index')
+    commenters = (Review.objects.values('user__username')
+        .annotate(comment_count=Count('id'))
+        .order_by('-comment_count','user__username')
+    )
+    template_data = {}
+    template_data['title'] = 'Top Commenters'
+    template_data['top_commenters'] = commenters
+    template_data['top_commenter'] = commenters.first()
+    return render(request, 'movies/top_commenters.html',
+                  {'template_data': template_data})
