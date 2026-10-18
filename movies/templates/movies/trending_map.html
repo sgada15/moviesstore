@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>Trending Movies by Region</h2>
+        <hr />
+        <div id="trending-map" class="mb-4" style="height: 500px;"></div>
+        <div class="row">
+          {% for region in template_data.regions %}
+          <div class="col-md-4 mb-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">{{ region.name }}</h5>
+                {% if region.movies %}
+                <ol class="mb-0">
+                  {% for movie in region.movies %}
+                  <li>{{ movie.name }} ({{ movie.total_sold }} sold)</li>
+                  {% endfor %}
+                </ol>
+                {% else %}
+                <p class="card-text text-muted">No purchases yet.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ template_data.regions|json_script:"regions-data" }}
+<script>
+  const regions = JSON.parse(document.getElementById('regions-data').textContent);
+  const map = L.map('trending-map').setView([20, 0], 2);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 6,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  regions.forEach(function (region) {
+    const popup = document.createElement('div');
+    const title = document.createElement('strong');
+    title.textContent = region.name;
+    popup.appendChild(title);
+
+    if (region.movies.length === 0) {
+      const empty = document.createElement('p');
+      empty.textContent = 'No purchases yet.';
+      popup.appendChild(empty);
+    } else {
+      const list = document.createElement('ol');
+      region.movies.forEach(function (movie) {
+        const item = document.createElement('li');
+        item.textContent = movie.name + ' (' + movie.total_sold + ' sold)';
+        list.appendChild(item);
+      });
+      popup.appendChild(list);
+    }
+
+    L.marker([region.lat, region.lng]).addTo(map).bindPopup(popup);
+  });
+</script>
+{% endblock content %}

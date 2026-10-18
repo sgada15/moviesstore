@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from movies.models import Movie
 from .utils import calculate_cart_total
 from .models import Order, Item
+from .regions import REGIONS, REGION_CHOICES
 from django.contrib.auth.decorators import login_required
 
 def index(request):
@@ -18,6 +19,7 @@ def index(request):
     template_data['title'] = 'Cart'
     template_data['movies_in_cart'] = movies_in_cart
     template_data['cart_total'] = cart_total
+    template_data['regions'] = REGION_CHOICES
     return render(request, 'cart/index.html', {'template_data': template_data})
 
 def add(request, id):
@@ -33,7 +35,12 @@ def clear(request):
 
 @login_required
 def purchase(request):
-    cart = request.session.get('cart', {})
+    if request.method != 'POST':
+        return redirect('cart.index')
+    region = request.POST.get('region')
+    if region not in REGIONS:
+        return redirect('cart.index')
+    cart =request.session.get('cart', {})
     movie_ids = list(cart.keys())
     if (movie_ids == []):
         return redirect('cart.index')
@@ -42,6 +49,7 @@ def purchase(request):
     order = Order()
     order.user = request.user
     order.total = cart_total
+    order.region = region
     order.save()
     for movie in movies_in_cart:
         item = Item()

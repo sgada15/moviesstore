@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Movie, Review, ReviewReport
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, Sum
+from cart.models import Item
+from cart.regions import REGIONS
 
 
 def index(request):
@@ -100,4 +102,28 @@ def top_commenters(request):
     template_data['top_commenters'] = commenters
     template_data['top_commenter'] = commenters.first()
     return render(request, 'movies/top_commenters.html',
+                  {'template_data': template_data})
+
+def trending_map(request):
+    sales = (Item.objects.filter(order__region__isnull=False)
+        .values('order__region', 'movie__name')
+        .annotate(total_sold=Sum('quantity'))
+        .order_by('order__region', '-total_sold', 'movie__name')
+    )
+    regions = []
+    for key, info in REGIONS.items():
+        top_movies = [sale for sale in sales
+            if sale['order__region'] == key][:3]
+        regions.append({
+            'name': info['name'],
+            'lat': info['lat'],
+            'lng': info['lng'],
+            'movies': [{'name': sale['movie__name'],
+                'total_sold': sale['total_sold']}
+                for sale in top_movies],
+        })
+    template_data = {}
+    template_data['title'] = 'Trending Map'
+    template_data['regions'] = regions
+    return render(request, 'movies/trending_map.html',
                   {'template_data': template_data})
