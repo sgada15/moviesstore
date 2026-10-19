@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="mb-4 text-center">Admin Dashboard: User Engagement</h2>
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Top Purchaser</h4>
+                </div>
+                <div class="card-body text-center">
+                    {% if template_data.top_user %}
+                        <h5 class="card-title">User: <strong>{{ template_data.top_user.username }}</strong></h5>
+                        <p class="card-text mt-3">
+                            This user has purchased a total of 
+                            <span class="badge bg-success fs-5">{{ template_data.top_user.movies_purchased }}</span> 
+                            movies.
+                        </p>
+                    {% else %}
+                        <p class="text-muted">No purchases have been made yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
