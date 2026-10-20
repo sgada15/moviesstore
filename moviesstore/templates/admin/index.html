@@ -1,0 +1,9 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<div class="module">
+  <h2>Movie engagement</h2>
+  <p><a href="{% url 'admin:movies_movie_popularity' %}">Movie popularity</a> — most purchased and most reviewed movies.</p>
+</div>
+{{ block.super }}
+{% endblock %}

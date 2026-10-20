@@ -1,0 +1,47 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a> &rsaquo; Movie popularity
+</div>
+{% endblock %}
+
+{% block content %}
+<p>Totals use completed purchases and saved reviews. All movies tied for first place are shown.</p>
+
+<div class="module">
+  <h2>Most purchased movie</h2>
+  {% if purchase_leaders %}
+  <table>
+    <caption>Most purchased movies</caption>
+    <thead><tr><th scope="col">Movie</th><th scope="col">Times purchased (copies)</th></tr></thead>
+    <tbody>
+      {% for movie in purchase_leaders %}
+      <tr><th scope="row">{{ movie.name }}</th><td>{{ movie.total }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No movies have been purchased yet.</p>
+  {% endif %}
+</div>
+
+<div class="module">
+  <h2>Most reviewed movie</h2>
+  {% if review_leaders %}
+  <table>
+    <caption>Most reviewed movies</caption>
+    <thead><tr><th scope="col">Movie</th><th scope="col">Reviews posted</th></tr></thead>
+    <tbody>
+      {% for movie in review_leaders %}
+      <tr><th scope="row">{{ movie.name }}</th><td>{{ movie.total }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No movies have been reviewed yet.</p>
+  {% endif %}
+</div>
+
+<p><a href="{% url 'admin:index' %}">Back to admin dashboard</a></p>
+{% endblock %}
