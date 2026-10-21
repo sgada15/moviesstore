@@ -15,4 +15,5 @@ urlpatterns = [
         views.delete_reported_review, name='movies.delete_reported_review'),
     path('top-commenters/', views.top_commenters, name='movies.top_commenters'),
     path('trending-map/', views.trending_map, name='movies.trending_map'),
+    path('<int:id>/rate/', views.rate_movie, name = 'movies.rate_movie'),
 ]

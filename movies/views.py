@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review, ReviewReport
+from .models import Movie, Review, ReviewReport, Rating
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Avg
 from cart.models import Item
 from cart.regions import REGIONS
 
@@ -21,10 +21,22 @@ def index(request):
 def show(request, id):
     movie = Movie.objects.get(id=id)
     reviews = Review.objects.filter(movie=movie)
+    ratings = Rating.objects.filter(movie=movie)
+    stats = ratings.aggregate(avg=Avg('value'), count=Count('id'))
+    user_rating = None
+
+    if request.user.is_authenticated:
+        user_rating = ratings.filter(user=request.user).first()
+
     template_data = {}
     template_data['title'] = movie.name
     template_data['movie'] = movie
     template_data['reviews'] = reviews
+    template_data['average_rating'] = (round(stats['avg'], 1)
+        if stats['avg'] is not None else None)
+    template_data['rating_count'] = stats['count']
+    template_data['user_rating'] = user_rating
+    template_data['star_range'] = range(1, 6)
     return render(request, 'movies/show.html',
                   {'template_data': template_data})
 
@@ -127,3 +139,20 @@ def trending_map(request):
     template_data['regions'] = regions
     return render(request, 'movies/trending_map.html',
                   {'template_data': template_data})
+
+
+
+@login_required
+def rate_movie(request, id):
+    movie = get_object_or_404(Movie, id=id)
+    if request.method == 'POST':
+        try:
+            value = int(request.POST.get('value', ''))
+        except ValueError:
+            return redirect('movies.show', id=id)
+        if 1<= value <= 5:
+            Rating.objects.update_or_create(
+                movie=movie, user=request.user,
+                defaults={'value': value}
+            )
+    return redirect('movies.show', id=id)

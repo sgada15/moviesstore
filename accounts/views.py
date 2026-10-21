@@ -55,9 +55,13 @@ def top_buyer(request):
     template_data = {}
     template_data['title'] = 'Top Buyer'
 
-    top_user = User.objects.annotate(movies_purchased=Sum('order__item__quantity')).order_by('-movies_purchased').first()
-    
-    template_Data['top_user'] = top_user
+    top_user = (User.objects
+        .annotate(movies_purchased=Sum('order__item__quantity'))
+        .filter(movies_purchased__isnull=False)
+        .order_by('-movies_purchased')
+        .first())
+
+    template_data['top_user'] = top_user
     
     return render(request, 'accounts/top_buyer.html', {'template_data': template_data})
 
